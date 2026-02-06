@@ -12,13 +12,6 @@ Analyzes a truss structure (8 nodes, 12 bars) and computes:
 - Support reactions
 - Bar tensions (tension/compression)
 
-## Features
-
-- Reads input from `Donnee.txt`
-- Three solving methods: LU decomposition, Gauss elimination, Thomas algorithm
-- Exports results to `Resultat.txt`
-- Automatic validation (force equilibrium check)
-
 ## Usage
 
 1. Place `Donnee.txt` in the Debug folder
