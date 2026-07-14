@@ -1,42 +1,10 @@
 # Truss Structure Equilibrium Analysis
 
-C# program that calculates the equilibrium of a 2D truss structure under applied forces.
+C# program that calculates the equilibrium of a 2D truss structure under applied forces using **Finite Element Method**
 
-**Academic Project - Fall 2020**  
-Axel Refalo & Nicolas Meyer - UTBM
+**Academic Project - Fall 2022**  
+Axel Refalo and Nicolas Meyer - University of Technology of Belfort Montbéliard
 
-## Overview
+## Web interface
 
-Analyzes a truss structure (8 nodes, 12 bars) and computes:
-- Node displacements
-- Support reactions
-- Bar tensions (tension/compression)
-
-## Usage
-
-1. Place `Donnee.txt` in the Debug folder
-2. Compile and run the program
-3. Check results in `Resultat.txt`
-
-## Input File Format
-
-The `Donnee.txt` file must contain:
-- Number of elements and nodes
-- Young's modulus and bar diameter
-- Node coordinates
-- Connection table
-- Displacement constraints
-- Applied forces
-- Solving method (1=LU, 2=Gauss, 3=Thomas)
-
-## Test Cases
-
-1. 5N horizontal force on N3
-2. 10N force at 315° on N5
-3. 20N vertical force on N4
-
-## Output
-
-- Node displacements (U, V in mm)
-- Applied forces (Fx, Fy in N)
-- Bar tensions with compression/tension indicator (N)
+[axelrefalo.github.io/Projet-MN41/web/truss-simulator.html](https://axelrefalo.github.io/Projet-MN41/web/truss-simulator.html)

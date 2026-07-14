@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Truss Simulator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #ffffff;
+  color: #1e293b;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+}
+
+header { text-align: center; margin-bottom: 28px; }
+
+header h1 {
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.mat-input {
+  width: 40px;
+  border: none;
+  border-bottom: 1px dashed #cbd5e1;
+  background: transparent;
+  color: #475569;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.76rem;
+  text-align: center;
+  padding: 0 2px;
+}
+.mat-input:focus { outline: none; border-bottom-color: #3b82f6; }
+
+.material {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+.material span { white-space: nowrap; }
+
+.amp-readout {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  min-width: 32px;
+}
+
+.card {
+  width: 100%;
+  max-width: 940px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+.canvas-wrap { position: relative; background: #f8fafc; }
+
+#canvas { display: block; width: 100%; height: auto; cursor: crosshair; }
+
+.legend-stack {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-size: 0.68rem;
+  color: #64748b;
+}
+
+.legend-item { display: flex; align-items: center; gap: 5px; }
+
+.legend-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+.stress-legend {
+  display: flex;
+  align-self: stretch;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+.stress-bar {
+  width: 90px;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #1a1a1a, #969696, #e6e6e6);
+}
+
+.scale-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.scale-bar {
+  position: relative;
+  height: 3px;
+  background: #0f172a;
+}
+
+.scale-bar::before, .scale-bar::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  width: 1px;
+  height: 9px;
+  background: #0f172a;
+}
+.scale-bar::before { left: 0; }
+.scale-bar::after { right: 0; }
+
+#tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-size: 0.7rem;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  display: none;
+  transform: translate(-50%, -130%);
+  z-index: 5;
+}
+
+.force-editor {
+  position: absolute;
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  transform: translate(-50%, -120%);
+  z-index: 6;
+}
+
+.fe-row { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #64748b; }
+.fe-row label { width: 12px; font-weight: 600; }
+.fe-row input {
+  width: 60px;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  padding: 2px 5px;
+  font: inherit;
+  font-size: 0.72rem;
+  color: #0f172a;
+}
+.fe-remove {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 0;
+  text-align: left;
+}
+.fe-remove:hover { text-decoration: underline; }
+
+.toolbar {
+  padding: 14px 22px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  border-top: 1px solid #e2e8f0;
+}
+
+.modes {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 9px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.mode-btn {
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.mode-btn.active { background: #3b82f6; color: #fff; }
+.mode-btn:not(.active):hover { background: #e2e8f0; }
+
+.spacer { flex: 1; }
+
+.btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn.primary { background: #16a34a; color: #fff; }
+.btn.primary:hover { background: #15803d; }
+
+.btn.ghost { background: transparent; color: #94a3b8; border: 1px solid #e2e8f0; }
+.btn.ghost:hover { background: #f1f5f9; color: #64748b; }
+
+.results {
+  border-top: 1px solid #e2e8f0;
+  background: #f8fafc;
+  padding: 12px 22px 16px;
+}
+
+.status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+
+.stat-label {
+  font-size: 0.63rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #94a3b8;
+}
+
+.stat-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+.result-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.result-list {
+  margin-top: 6px;
+  max-height: 170px;
+  overflow-y: auto;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.result-row:last-child { border-bottom: none; }
+
+.result-row .name { color: #64748b; font-weight: 600; }
+.result-row .val { color: #0f172a; }
+.result-empty { color: #cbd5e1; font-size: 0.78rem; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Truss Simulator</h1>
+</header>
+
+<div class="card">
+  <div class="canvas-wrap">
+    <canvas id="canvas"></canvas>
+    <div class="legend-stack">
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:#16a34a"></span>Node</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#2563eb"></span>Support</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#dc2626"></span>Force</div>
+      </div>
+      <div class="scale-legend">
+        <div class="scale-bar" id="scaleBar"></div>
+        <span id="scaleLabel"></span>
+      </div>
+      <div class="stress-legend" id="stressLegend">
+        <span>Compression</span><span class="stress-bar"></span><span>Tension</span>
+      </div>
+    </div>
+    <div id="tooltip"></div>
+    <div class="force-editor" id="forceEditor">
+      <div class="fe-row"><label>N</label><input type="number" id="feMag" step="0.5"></div>
+      <div class="fe-row"><label>°</label><input type="number" id="feAngle" step="1"></div>
+      <button class="fe-remove" id="feRemove">Remove</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="modes">
+      <button class="mode-btn active" data-mode="node">Node</button>
+      <button class="mode-btn" data-mode="bar">Bar</button>
+      <button class="mode-btn" data-mode="support">Support</button>
+      <button class="mode-btn" data-mode="force">Force</button>
+      <button class="mode-btn" data-mode="delete">Delete</button>
+    </div>
+    <div class="material">
+      <span>E = <input type="number" id="eInput" class="mat-input" value="1" min="0.001" step="0.1"> MPa</span>
+      <span>∅ <input type="number" id="dInput" class="mat-input" value="15" min="0.1" step="1"> mm</span>
+    </div>
+    <div class="spacer"></div>
+    <div id="ampWrap" style="display:none; flex:0 0 110px; align-items:center; gap:6px;">
+      <input type="range" id="ampSlider" min="1" max="100" value="30" style="width:100%; accent-color:#3b82f6;">
+      <span class="amp-readout" id="ampReadout">×30</span>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn primary" id="computeBtn">Compute</button>
+      <button class="btn ghost" id="clearBtn">Clear</button>
+    </div>
+  </div>
+
+  <div class="results">
+    <div class="status-row">
+      <span class="stat-label">Status</span>
+      <span class="stat-value" id="sv-status">Not computed</span>
+    </div>
+    <div class="result-cols">
+      <div>
+        <div class="stat-label">Displacement (mm)</div>
+        <div class="result-list" id="dispList"></div>
+        <div class="result-empty" id="dispEmpty">–</div>
+      </div>
+      <div>
+        <div class="stat-label">Bar Stress (MPa)</div>
+        <div class="result-list" id="stressList"></div>
+        <div class="result-empty" id="stressEmpty">–</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Canvas setup ───────────────────────────────────────────
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const DPR = window.devicePixelRatio || 1;
+const W = 900, H = 520;
+canvas.width = W * DPR; canvas.height = H * DPR;
+canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+ctx.scale(DPR, DPR);
+
+const SC = 200;       // px per metre
+const OX = 250, OY = 380;
+const SNAP = 0.25;    // metres
+const HIT_R = 11;     // px
+
+document.getElementById('scaleBar').style.width = (SNAP * SC) + 'px';
+document.getElementById('scaleLabel').textContent = `${SNAP} m`;
+const FORCE_PX_PER_N = 4;
+
+function toPx(mx, my) { return [OX + mx * SC, OY - my * SC]; }
+function toM(px, py) { return [(px - OX) / SC, (OY - py) / SC]; }
+function snap(v) { return Math.round(v / SNAP) * SNAP; }
+function signed(v, digits) { return (v >= 0 ? '+' : '') + v.toFixed(digits); }
+
+// ── Model state ────────────────────────────────────────────
+let nodes = [];     // {x, y, sx, sy}  (sx/sy = fixed in that direction, metres)
+let elements = [];  // [i, j]
+let forces = {};    // nodeIndex -> {fx, fy} in Newtons
+let mode = 'node';
+let barFirst = null;
+let dragNode = null;
+let dragForce = null;
+let editingForceIdx = null;
+let result = null;  // {d, T, R}
+
+function preload() {
+  // Original 8-node / 12-bar project truss (N1..N8), spacing scaled ×5 from the
+  // 200mm reference geometry for a clearer default canvas view.
+  nodes = [
+    { x: 0.0, y: 1.0, sx: true,  sy: true },  // N1
+    { x: 0.0, y: 0.0, sx: true,  sy: true },  // N2
+    { x: 0.5, y: 0.5, sx: false, sy: false }, // N3
+    { x: 1.0, y: 1.0, sx: false, sy: false }, // N4
+    { x: 1.0, y: 0.0, sx: false, sy: false }, // N5
+    { x: 1.5, y: 0.5, sx: false, sy: false }, // N6
+    { x: 2.0, y: 1.0, sx: true,  sy: true },  // N7
+    { x: 2.0, y: 0.0, sx: true,  sy: true },  // N8
+  ];
+  elements = [
+    [0,3],[0,2],[2,3],[1,2],[2,4],[1,4], // E1..E6
+    [3,6],[3,5],[5,6],[4,5],[5,7],[4,7], // E7..E12
+  ];
+  const ang315 = 315 * Math.PI / 180;
+  forces = {
+    2: { fx: 5, fy: 0 },                                              // N3: 5 N horizontal (cas n°1)
+    4: { fx: 10 * Math.cos(ang315), fy: 10 * Math.sin(ang315) },       // N5: 10 N at 315° (cas n°2)
+    3: { fx: 0, fy: -20 },                                             // N4: 20 N vertical (cas n°3)
+  };
+}
+preload();
+
+function invalidate() {
+  result = null;
+  document.getElementById('ampWrap').style.display = 'none';
+  document.getElementById('sv-status').textContent = 'Not computed';
+  document.getElementById('sv-status').style.color = '#0f172a';
+  document.getElementById('dispList').innerHTML = '';
+  document.getElementById('stressList').innerHTML = '';
+  document.getElementById('dispEmpty').style.display = 'block';
+  document.getElementById('stressEmpty').style.display = 'block';
+  render();
+}
+
+// ── Force editor (exact magnitude/angle entry) ─────────────
+function openForceEditor(idx) {
+  editingForceIdx = idx;
+  const f = forces[idx] || { fx: 0, fy: 0 };
+  const mag = Math.hypot(f.fx, f.fy);
+  let angle = Math.atan2(f.fy, f.fx) * 180 / Math.PI;
+  if (angle < 0) angle += 360;
+  document.getElementById('feMag').value = mag.toFixed(2);
+  document.getElementById('feAngle').value = Math.round(angle);
+  const [px, py] = toPx(nodes[idx].x, nodes[idx].y);
+  const editor = document.getElementById('forceEditor');
+  editor.style.left = px + 'px';
+  editor.style.top = py + 'px';
+  editor.style.display = 'flex';
+}
+
+function closeForceEditor() {
+  editingForceIdx = null;
+  document.getElementById('forceEditor').style.display = 'none';
+}
+
+function applyForceEditor() {
+  if (editingForceIdx === null) return;
+  const mag = parseFloat(document.getElementById('feMag').value) || 0;
+  const angle = parseFloat(document.getElementById('feAngle').value) || 0;
+  if (mag <= 0) {
+    delete forces[editingForceIdx];
+  } else {
+    const rad = angle * Math.PI / 180;
+    forces[editingForceIdx] = { fx: mag * Math.cos(rad), fy: mag * Math.sin(rad) };
+  }
+  invalidate();
+}
+
+// ── Solver ─────────────────────────────────────────────────
+function gaussSolve(Kin, bin) {
+  const n = bin.length;
+  const M = Kin.map((row, i) => { const r = [...row]; r.push(bin[i]); return r; });
+  let maxAbs = 0;
+  for (const row of Kin) for (const v of row) maxAbs = Math.max(maxAbs, Math.abs(v));
+  const tol = (maxAbs || 1) * 1e-9;
+  for (let k = 0; k < n; k++) {
+    let p = k;
+    for (let i = k + 1; i < n; i++) if (Math.abs(M[i][k]) > Math.abs(M[p][k])) p = i;
+    [M[k], M[p]] = [M[p], M[k]];
+    if (Math.abs(M[k][k]) < tol) return { unstable: true };
+    for (let i = k + 1; i < n; i++) {
+      const f = M[i][k] / M[k][k];
+      for (let j = k; j <= n; j++) M[i][j] -= f * M[k][j];
+    }
+  }
+  const x = new Array(n).fill(0);
+  for (let i = n - 1; i >= 0; i--) {
+    x[i] = M[i][n];
+    for (let j = i + 1; j < n; j++) x[i] -= M[i][j] * x[j];
+    x[i] /= M[i][i];
+  }
+  return { x, unstable: false };
+}
+
+function compute() {
+  const n = nodes.length;
+  if (n < 2 || elements.length < 1) {
+    document.getElementById('sv-status').textContent = 'Need ≥2 nodes + 1 bar';
+    document.getElementById('sv-status').style.color = '#dc2626';
+    return;
+  }
+  const E_MOD = parseFloat(document.getElementById('eInput').value) * 1e6; // MPa -> Pa
+  const D_M = parseFloat(document.getElementById('dInput').value) / 1000;  // mm -> m
+  const A_SEC = Math.PI * D_M * D_M / 4;
+  const ndof = n * 2;
+  const K = Array.from({ length: ndof }, () => new Float64Array(ndof));
+  const L0 = [];
+  for (const [i, j] of elements) {
+    const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
+    const L = Math.hypot(dx, dy) || 1e-6;
+    L0.push(L);
+    const k = E_MOD * A_SEC / L;
+    const c = dx / L, s = dy / L;
+    const ke = [
+      [ c*c,  c*s, -c*c, -c*s],
+      [ c*s,  s*s, -c*s, -s*s],
+      [-c*c, -c*s,  c*c,  c*s],
+      [-c*s, -s*s,  c*s,  s*s],
+    ];
+    const d = [i*2, i*2+1, j*2, j*2+1];
+    for (let a = 0; a < 4; a++) for (let b = 0; b < 4; b++) K[d[a]][d[b]] += k * ke[a][b];
+  }
+
+  const free = [];
+  nodes.forEach((nd, idx) => { if (!nd.sx) free.push(idx*2); if (!nd.sy) free.push(idx*2+1); });
+  if (free.length === 0) {
+    document.getElementById('sv-status').textContent = 'All nodes fixed';
+    document.getElementById('sv-status').style.color = '#dc2626';
+    return;
+  }
+
+  const F = new Array(ndof).fill(0);
+  for (const idx in forces) { F[idx*2] = forces[idx].fx; F[idx*2+1] = forces[idx].fy; }
+
+  const Kred = free.map(r => free.map(c => K[r][c]));
+  const Fred = free.map(r => F[r]);
+  const sol = gaussSolve(Kred, Fred);
+
+  if (sol.unstable) {
+    document.getElementById('sv-status').textContent = 'Unstable — add supports';
+    document.getElementById('sv-status').style.color = '#dc2626';
+    result = null;
+    render();
+    return;
+  }
+
+  const d = new Array(ndof).fill(0);
+  free.forEach((dof, i) => { d[dof] = sol.x[i]; });
+
+  const T = elements.map(([i, j], idx) => {
+    const k = E_MOD * A_SEC / L0[idx];
+    const Xi = nodes[i].x + d[i*2], Yi = nodes[i].y + d[i*2+1];
+    const Xj = nodes[j].x + d[j*2], Yj = nodes[j].y + d[j*2+1];
+    return (Math.hypot(Xj-Xi, Yj-Yi) - L0[idx]) * k;
+  });
+
+  const R = new Array(ndof).fill(0);
+  for (let r = 0; r < ndof; r++) {
+    let s = 0;
+    for (let c = 0; c < ndof; c++) s += K[r][c] * d[c];
+    R[r] = s - F[r];
+  }
+
+  result = { d, T, R, E_MOD, A_SEC };
+
+  document.getElementById('sv-status').textContent = 'Stable';
+  document.getElementById('sv-status').style.color = '#16a34a';
+
+  document.getElementById('dispEmpty').style.display = 'none';
+  document.getElementById('dispList').innerHTML = nodes.map((nd, i) => {
+    const ux = d[i*2] * 1000, uy = d[i*2+1] * 1000;
+    const mag = Math.hypot(ux, uy);
+    return `<div class="result-row"><span class="name">N${i+1}</span><span class="val">${mag.toFixed(3)} mm</span></div>`;
+  }).join('');
+
+  document.getElementById('stressEmpty').style.display = 'none';
+  document.getElementById('stressList').innerHTML = elements.map((el, idx) => {
+    const stressMPa = (T[idx] / A_SEC) / 1e6;
+    return `<div class="result-row"><span class="name">E${idx+1}</span><span class="val">${signed(stressMPa,4)} MPa</span></div>`;
+  }).join('');
+
+  const ampWrap = document.getElementById('ampWrap');
+  ampWrap.style.display = 'flex';
+  const maxDispM = Math.max(...d.map(Math.abs));
+  const autoAmp = maxDispM > 1e-9 ? Math.min(100, Math.max(1, Math.round(40 / (maxDispM * SC)))) : 30;
+  document.getElementById('ampSlider').value = autoAmp;
+  document.getElementById('ampReadout').textContent = '×' + autoAmp;
+
+  render();
+}
+
+// ── Rendering ──────────────────────────────────────────────
+function stressColor(t, maxT) {
+  if (maxT < 1e-10) return '#969696';
+  const v = Math.max(-1, Math.min(1, t / maxT));
+  // diverging greyscale: dark = compression, light = tension, mid-grey = zero
+  const g = Math.round(150 + v * (v >= 0 ? 75 : 120));
+  return `rgb(${g},${g},${g})`;
+}
+
+function drawSupport(cx, cy, type) {
+  const s = 13;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(cx - s*0.8, cy + s*1.3);
+  ctx.lineTo(cx + s*0.8, cy + s*1.3);
+  ctx.closePath();
+  ctx.fillStyle = '#dbeafe';
+  ctx.strokeStyle = '#2563eb';
+  ctx.lineWidth = 1.6;
+  ctx.fill(); ctx.stroke();
+
+  const groundY = cy + s*1.3 + (type === 'roller' ? 8 : 0);
+  if (type === 'roller') {
+    ctx.fillStyle = '#2563eb';
+    for (let x = -s*0.55; x <= s*0.55+1; x += s*0.55) {
+      ctx.beginPath(); ctx.arc(cx+x, cy+s*1.3+4, 3, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#2563eb';
+  ctx.beginPath(); ctx.moveTo(cx-s-4, groundY); ctx.lineTo(cx+s+4, groundY); ctx.stroke();
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#93c5fd';
+  for (let h = -s-2; h <= s+2; h += 6) {
+    ctx.beginPath(); ctx.moveTo(cx+h, groundY); ctx.lineTo(cx+h-5, groundY+6); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawForceArrow(cx, cy, fx, fy) {
+  const mag = Math.hypot(fx, fy);
+  if (mag < 0.05) return;
+  const realLen = mag * FORCE_PX_PER_N;
+  const len = Math.min(85, realLen);
+  const ang = Math.atan2(-fy, fx);
+  const ex = cx + Math.cos(ang) * len, ey = cy + Math.sin(ang) * len;
+
+  ctx.save();
+  ctx.strokeStyle = '#dc2626'; ctx.fillStyle = '#dc2626';
+  ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex - Math.cos(ang)*9, ey - Math.sin(ang)*9); ctx.stroke();
+
+  ctx.save();
+  ctx.translate(ex, ey); ctx.rotate(ang);
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-11,-6); ctx.lineTo(-11,6); ctx.closePath(); ctx.fill();
+  ctx.restore();
+
+  ctx.fillStyle = '#991b1b';
+  ctx.font = 'bold 11px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${mag.toFixed(1)} N`, cx + Math.cos(ang)*(len+22), cy + Math.sin(ang)*(len+22));
+  ctx.restore();
+}
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#eef2f7'; ctx.lineWidth = 1;
+  const gridPx = SNAP * SC;
+  for (let x = OX % gridPx; x < W; x += gridPx) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = OY % gridPx; y < H; y += gridPx) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  const d = result ? result.d : null;
+  const amp = result ? parseFloat(document.getElementById('ampSlider').value) : 0;
+  const maxT = result ? Math.max(...result.T.map(Math.abs), 1e-10) : 0;
+
+  function dPos(idx) {
+    if (!d) return toPx(nodes[idx].x, nodes[idx].y);
+    return toPx(nodes[idx].x + d[idx*2]*amp, nodes[idx].y + d[idx*2+1]*amp);
+  }
+
+  // ghost original (only meaningful once deformed)
+  if (result) {
+    ctx.save();
+    ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.3; ctx.setLineDash([5,5]);
+    for (const [i,j] of elements) {
+      const [x1,y1] = toPx(nodes[i].x, nodes[i].y);
+      const [x2,y2] = toPx(nodes[j].x, nodes[j].y);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    }
+    ctx.setLineDash([]); ctx.restore();
+  }
+
+  // bars
+  ctx.lineCap = 'round';
+  elements.forEach(([i,j], idx) => {
+    const [x1,y1] = dPos(i), [x2,y2] = dPos(j);
+    if (result) {
+      // thin casing so light (high-tension) greys stay visible on a light background
+      ctx.lineWidth = 6.5; ctx.strokeStyle = '#94a3b8';
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    }
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = result ? stressColor(result.T[idx], maxT) : '#475569';
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.save(); ctx.font = '9px -apple-system, sans-serif'; ctx.fillStyle = '#94a3b8';
+    ctx.fillText(`E${idx+1}`, (x1+x2)/2+3, (y1+y2)/2-3);
+    ctx.restore();
+  });
+
+  // supports
+  nodes.forEach((nd, idx) => {
+    if (nd.sx && nd.sy) drawSupport(...dPos(idx), 'pin');
+    else if (nd.sy) drawSupport(...dPos(idx), 'roller');
+  });
+
+  // forces
+  Object.keys(forces).forEach(k => {
+    const [x,y] = dPos(+k);
+    drawForceArrow(x, y, forces[k].fx, forces[k].fy);
+  });
+
+  // nodes
+  nodes.forEach((nd, idx) => {
+    const [x,y] = dPos(idx);
+    ctx.fillStyle = (mode === 'bar' && barFirst === idx) ? '#3b82f6' : '#16a34a';
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+    if (mode === 'bar' && barFirst === idx) {
+      ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x,y,9,0,Math.PI*2); ctx.stroke();
+    }
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.fillStyle = '#16a34a';
+    ctx.fillText(`N${idx+1}`, x+8, y-6);
+  });
+
+  // live force drag preview
+  if (dragForce !== null) {
+    const [x,y] = toPx(nodes[dragForce.idx].x, nodes[dragForce.idx].y);
+    drawForceArrow(x, y, dragForce.fx, dragForce.fy);
+  }
+}
+
+// ── Hit testing ────────────────────────────────────────────
+function nodeAt(px, py) {
+  for (let i = 0; i < nodes.length; i++) {
+    const [x,y] = toPx(nodes[i].x, nodes[i].y);
+    if (Math.hypot(px-x, py-y) < HIT_R) return i;
+  }
+  return null;
+}
+
+function distToSeg(px,py,x1,y1,x2,y2) {
+  const dx=x2-x1, dy=y2-y1;
+  const len2 = dx*dx+dy*dy;
+  let t = len2 === 0 ? 0 : ((px-x1)*dx+(py-y1)*dy)/len2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px-(x1+t*dx), py-(y1+t*dy));
+}
+
+function elementAt(px, py) {
+  for (let i = 0; i < elements.length; i++) {
+    const [a,b] = elements[i];
+    const [x1,y1] = toPx(nodes[a].x, nodes[a].y);
+    const [x2,y2] = toPx(nodes[b].x, nodes[b].y);
+    if (distToSeg(px,py,x1,y1,x2,y2) < 7) return i;
+  }
+  return null;
+}
+
+// ── Node/element deletion with index remap ────────────────
+function deleteNode(idx) {
+  elements = elements.filter(([a,b]) => a !== idx && b !== idx)
+                     .map(([a,b]) => [a > idx ? a-1 : a, b > idx ? b-1 : b]);
+  const newForces = {};
+  for (const k in forces) {
+    const ki = +k;
+    if (ki === idx) continue;
+    newForces[ki > idx ? ki-1 : ki] = forces[k];
+  }
+  forces = newForces;
+  nodes.splice(idx, 1);
+  if (barFirst === idx) barFirst = null;
+  else if (barFirst !== null && barFirst > idx) barFirst--;
+}
+
+// ── Mode / UI wiring ───────────────────────────────────────
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+    barFirst = null;
+    closeForceEditor();
+    render();
+  });
+});
+
+document.getElementById('computeBtn').addEventListener('click', compute);
+document.getElementById('ampSlider').addEventListener('input', () => {
+  document.getElementById('ampReadout').textContent = '×' + document.getElementById('ampSlider').value;
+  render();
+});
+document.getElementById('feMag').addEventListener('input', applyForceEditor);
+document.getElementById('feAngle').addEventListener('input', applyForceEditor);
+document.getElementById('feRemove').addEventListener('click', () => {
+  if (editingForceIdx !== null) delete forces[editingForceIdx];
+  invalidate();
+  closeForceEditor();
+});
+document.getElementById('eInput').addEventListener('input', invalidate);
+document.getElementById('dInput').addEventListener('input', invalidate);
+document.getElementById('clearBtn').addEventListener('click', () => {
+  nodes = []; elements = []; forces = {}; barFirst = null;
+  invalidate();
+});
+
+const tooltip = document.getElementById('tooltip');
+
+canvas.addEventListener('mousedown', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const px = e.clientX - rect.left, py = e.clientY - rect.top;
+  const hit = nodeAt(px, py);
+  closeForceEditor();
+
+  if (mode === 'node') {
+    if (hit !== null) { dragNode = hit; }
+    else {
+      const [mx, my] = toM(px, py);
+      nodes.push({ x: snap(mx), y: snap(my), sx: false, sy: false });
+      dragNode = nodes.length - 1;
+      invalidate();
+    }
+  } else if (mode === 'bar') {
+    if (hit === null) { barFirst = null; render(); return; }
+    if (barFirst === null) { barFirst = hit; render(); }
+    else if (barFirst !== hit) {
+      const dup = elements.some(([a,b]) => (a===barFirst&&b===hit)||(a===hit&&b===barFirst));
+      if (!dup) elements.push([barFirst, hit]);
+      barFirst = null;
+      invalidate();
+    } else { barFirst = null; render(); }
+  } else if (mode === 'support') {
+    if (hit !== null) {
+      const nd = nodes[hit];
+      if (!nd.sx && !nd.sy) { nd.sx = true; nd.sy = true; }
+      else if (nd.sx && nd.sy) { nd.sx = false; nd.sy = true; }
+      else { nd.sx = false; nd.sy = false; }
+      invalidate();
+    } else {
+      const [mx, my] = toM(px, py);
+      nodes.push({ x: snap(mx), y: snap(my), sx: true, sy: true });
+      invalidate();
+    }
+  } else if (mode === 'force') {
+    if (hit !== null) {
+      const [nx, ny] = toPx(nodes[hit].x, nodes[hit].y);
+      dragForce = { idx: hit, startX: nx, startY: ny, fx: 0, fy: 0 };
+    }
+  } else if (mode === 'delete') {
+    if (hit !== null) { deleteNode(hit); invalidate(); }
+    else {
+      const eh = elementAt(px, py);
+      if (eh !== null) { elements.splice(eh, 1); invalidate(); }
+    }
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const px = e.clientX - rect.left, py = e.clientY - rect.top;
+
+  if (dragNode !== null) {
+    const [mx, my] = toM(px, py);
+    nodes[dragNode].x = snap(mx);
+    nodes[dragNode].y = snap(my);
+    result = null;
+    render();
+    return;
+  }
+
+  if (dragForce !== null) {
+    const vx = (px - dragForce.startX) / FORCE_PX_PER_N;
+    const vy = -(py - dragForce.startY) / FORCE_PX_PER_N;
+    dragForce.fx = vx; dragForce.fy = vy;
+    render();
+    return;
+  }
+
+  // hover tooltip
+  const hit = nodeAt(px, py);
+  if (hit !== null) {
+    const nd = nodes[hit];
+    let text = `N${hit+1}`;
+    if (result) {
+      const ux = result.d[hit*2]*1000, uy = result.d[hit*2+1]*1000;
+      text += ` · Ux ${ux.toFixed(2)} mm · Uy ${uy.toFixed(2)} mm`;
+      if (nd.sx || nd.sy) {
+        text += ` · Rx ${result.R[hit*2].toFixed(2)} N · Ry ${result.R[hit*2+1].toFixed(2)} N`;
+      }
+    } else if (nd.sx || nd.sy) {
+      text += nd.sx ? ' · pinned' : ' · roller';
+    }
+    tooltip.textContent = text;
+    tooltip.style.left = px + 'px'; tooltip.style.top = py + 'px';
+    tooltip.style.display = 'block';
+    canvas.style.cursor = mode === 'delete' ? 'not-allowed' : 'pointer';
+    return;
+  }
+  const eh = elementAt(px, py);
+  if (eh !== null && result) {
+    const t = result.T[eh];
+    const stressMPa = (t / result.A_SEC) / 1e6;
+    const strainUE  = (stressMPa * 1e6 / result.E_MOD) * 1e6; // microstrain
+    tooltip.textContent = `E${eh+1}, σ=${signed(stressMPa,3)} MPa ε=${signed(strainUE,0)}e-6`;
+    tooltip.style.left = px + 'px'; tooltip.style.top = py + 'px';
+    tooltip.style.display = 'block';
+    canvas.style.cursor = mode === 'delete' ? 'not-allowed' : 'default';
+    return;
+  }
+  tooltip.style.display = 'none';
+  canvas.style.cursor = mode === 'node' ? 'crosshair' : 'default';
+});
+
+window.addEventListener('mouseup', () => {
+  if (dragNode !== null) { dragNode = null; }
+  if (dragForce !== null) {
+    const dragPx = Math.hypot(dragForce.fx, dragForce.fy) * FORCE_PX_PER_N;
+    const idx = dragForce.idx;
+    if (dragPx < 5) {
+      // a click, not a drag: open the exact-value editor instead of deleting
+      dragForce = null;
+      render();
+      openForceEditor(idx);
+    } else {
+      forces[idx] = { fx: dragForce.fx, fy: dragForce.fy };
+      dragForce = null;
+      invalidate();
+    }
+  }
+});
+
+canvas.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+
+render();
+</script>
+</body>
+</html>
