@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Truss Simulator</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -55,7 +56,7 @@ header h1 {
   font-size: 0.72rem;
   font-weight: 600;
   color: #64748b;
-  min-width: 32px;
+  min-width: 40px;
 }
 
 .card {
@@ -86,18 +87,6 @@ header h1 {
   pointer-events: none;
 }
 
-.legend {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  font-size: 0.68rem;
-  color: #64748b;
-}
-
-.legend-item { display: flex; align-items: center; gap: 5px; }
-
-.legend-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-
 .stress-legend {
   display: flex;
   align-self: stretch;
@@ -114,31 +103,6 @@ header h1 {
   border-radius: 4px;
   background: linear-gradient(to right, #1a1a1a, #969696, #e6e6e6);
 }
-
-.scale-legend {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.65rem;
-  color: #64748b;
-}
-
-.scale-bar {
-  position: relative;
-  height: 3px;
-  background: #0f172a;
-}
-
-.scale-bar::before, .scale-bar::after {
-  content: '';
-  position: absolute;
-  top: -3px;
-  width: 1px;
-  height: 9px;
-  background: #0f172a;
-}
-.scale-bar::before { left: 0; }
-.scale-bar::after { right: 0; }
 
 #tooltip {
   position: absolute;
@@ -211,16 +175,17 @@ header h1 {
 .mode-btn {
   border: none;
   background: transparent;
-  color: #64748b;
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 7px 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
   border-radius: 7px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, box-shadow 0.15s;
 }
 
-.mode-btn.active { background: #3b82f6; color: #fff; }
+.mode-btn.active { background: #dbeafe; box-shadow: inset 0 0 0 1.5px #3b82f6; }
 .mode-btn:not(.active):hover { background: #e2e8f0; }
 
 .spacer { flex: 1; }
@@ -302,15 +267,6 @@ header h1 {
   <div class="canvas-wrap">
     <canvas id="canvas"></canvas>
     <div class="legend-stack">
-      <div class="legend">
-        <div class="legend-item"><span class="legend-swatch" style="background:#16a34a"></span>Node</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#2563eb"></span>Support</div>
-        <div class="legend-item"><span class="legend-swatch" style="background:#dc2626"></span>Force</div>
-      </div>
-      <div class="scale-legend">
-        <div class="scale-bar" id="scaleBar"></div>
-        <span id="scaleLabel"></span>
-      </div>
       <div class="stress-legend" id="stressLegend">
         <span>Compression</span><span class="stress-bar"></span><span>Tension</span>
       </div>
@@ -325,20 +281,37 @@ header h1 {
 
   <div class="toolbar">
     <div class="modes">
-      <button class="mode-btn active" data-mode="node">Node</button>
-      <button class="mode-btn" data-mode="bar">Bar</button>
-      <button class="mode-btn" data-mode="support">Support</button>
-      <button class="mode-btn" data-mode="force">Force</button>
-      <button class="mode-btn" data-mode="delete">Delete</button>
+      <button class="mode-btn active" data-mode="node" title="Node">
+        <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5" fill="#16a34a"/></svg>
+      </button>
+      <button class="mode-btn" data-mode="bar" title="Bar">
+        <svg width="16" height="16" viewBox="0 0 16 16"><line x1="2" y1="14" x2="14" y2="2" stroke="#475569" stroke-width="3" stroke-linecap="round"/></svg>
+      </button>
+      <button class="mode-btn" data-mode="support" title="Support">
+        <svg width="16" height="16" viewBox="0 0 18 18">
+          <path d="M9 2 L14 12 L4 12 Z" fill="#dbeafe" stroke="#2563eb" stroke-width="1.3"/>
+          <line x1="4" y1="12" x2="14" y2="12" stroke="#2563eb" stroke-width="1.8"/>
+          <line x1="5" y1="12" x2="3" y2="15" stroke="#93c5fd" stroke-width="1"/>
+          <line x1="8" y1="12" x2="6" y2="15" stroke="#93c5fd" stroke-width="1"/>
+          <line x1="11" y1="12" x2="9" y2="15" stroke="#93c5fd" stroke-width="1"/>
+          <line x1="14" y1="12" x2="12" y2="15" stroke="#93c5fd" stroke-width="1"/>
+        </svg>
+      </button>
+      <button class="mode-btn" data-mode="force" title="Force">
+        <svg width="16" height="16" viewBox="0 0 16 16"><line x1="2" y1="8" x2="11" y2="8" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/><path d="M10.5 4 L15 8 L10.5 12 Z" fill="#dc2626"/></svg>
+      </button>
+      <button class="mode-btn" data-mode="delete" title="Delete">
+        <svg width="16" height="16" viewBox="0 0 16 16"><line x1="3" y1="3" x2="13" y2="13" stroke="#64748b" stroke-width="2" stroke-linecap="round"/><line x1="13" y1="3" x2="3" y2="13" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
     </div>
     <div class="material">
       <span>E = <input type="number" id="eInput" class="mat-input" value="1" min="0.001" step="0.1"> MPa</span>
       <span>∅ <input type="number" id="dInput" class="mat-input" value="15" min="0.1" step="1"> mm</span>
     </div>
     <div class="spacer"></div>
-    <div id="ampWrap" style="display:none; flex:0 0 110px; align-items:center; gap:6px;">
-      <input type="range" id="ampSlider" min="1" max="100" value="30" style="width:100%; accent-color:#3b82f6;">
-      <span class="amp-readout" id="ampReadout">×30</span>
+    <div id="ampWrap" style="display:none; flex:0 0 130px; align-items:center; gap:6px;">
+      <input type="range" id="ampSlider" min="0" max="100" value="50" style="width:100%; accent-color:#3b82f6;">
+      <span class="amp-readout" id="ampReadout">×1</span>
     </div>
     <div style="display:flex; gap:10px;">
       <button class="btn primary" id="computeBtn">Compute</button>
@@ -367,7 +340,6 @@ header h1 {
 </div>
 
 <script>
-// ── Canvas setup ───────────────────────────────────────────
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const DPR = window.devicePixelRatio || 1;
@@ -381,16 +353,68 @@ const OX = 250, OY = 380;
 const SNAP = 0.25;    // metres
 const HIT_R = 11;     // px
 
-document.getElementById('scaleBar').style.width = (SNAP * SC) + 'px';
-document.getElementById('scaleLabel').textContent = `${SNAP} m`;
 const FORCE_PX_PER_N = 4;
 
 function toPx(mx, my) { return [OX + mx * SC, OY - my * SC]; }
 function toM(px, py) { return [(px - OX) / SC, (OY - py) / SC]; }
 function snap(v) { return Math.round(v / SNAP) * SNAP; }
 function signed(v, digits) { return (v >= 0 ? '+' : '') + v.toFixed(digits); }
+function subHtml(label) { return label.replace(/^([A-Za-z]+)(\d+)/, '$1<sub>$2</sub>'); }
 
-// ── Model state ────────────────────────────────────────────
+// Amplify slider: log scale, centre (50) = ×1. Right half exaggerates a tiny displacement
+// up to ×100; left half shrinks an oversized one (e.g. a large nonlinear deflection) to ×0.01.
+const AMP_MID = 50, AMP_SPAN = 50, AMP_DECADES = 2;
+function sliderToAmp(r) { return Math.pow(10, (r - AMP_MID) / AMP_SPAN * AMP_DECADES); }
+function ampToSlider(a) { return AMP_MID + Math.log10(a) / AMP_DECADES * AMP_SPAN; }
+
+// Current on-screen position of a node: deformed (and amplified) once a result exists, so
+// hit-testing (hover/click) always matches what's actually drawn, not the original geometry.
+function dPos(idx) {
+  if (!result) return toPx(nodes[idx].x, nodes[idx].y);
+  const amp = sliderToAmp(parseFloat(document.getElementById('ampSlider').value));
+  return toPx(nodes[idx].x + result.d[idx*2]*amp, nodes[idx].y + result.d[idx*2+1]*amp);
+}
+function formatAmp(a) { return a < 1 ? a.toFixed(2) : Math.round(a); }
+
+// Draws "letter" + a smaller, baseline-dropped digit run, mimicking LaTeX subscript (e.g. N4 -> N₄)
+function drawSubLabel(text, x, y, color, fontSize) {
+  const m = text.match(/^([A-Za-z]+)(\d+)$/);
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.fillStyle = color;
+  if (!m) {
+    ctx.font = `600 ${fontSize}px -apple-system, sans-serif`;
+    ctx.fillText(text, x, y);
+    ctx.restore();
+    return;
+  }
+  const [, letter, num] = m;
+  ctx.font = `600 ${fontSize}px -apple-system, sans-serif`;
+  ctx.fillText(letter, x, y);
+  const letterW = ctx.measureText(letter).width;
+  ctx.font = `600 ${Math.round(fontSize * 0.7)}px -apple-system, sans-serif`;
+  ctx.fillText(num, x + letterW + 1, y + fontSize * 0.28);
+  ctx.restore();
+}
+
+function drawScaleBar() {
+  const barLen = SNAP * SC;
+  const margin = 22;
+  const bx = W - margin - barLen, by = H - margin;
+  ctx.save();
+  ctx.strokeStyle = '#0f172a';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + barLen, by); ctx.stroke();
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(bx, by - 5); ctx.lineTo(bx, by + 2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(bx + barLen, by - 5); ctx.lineTo(bx + barLen, by + 2); ctx.stroke();
+  ctx.fillStyle = '#64748b';
+  ctx.font = '10px -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`${SNAP} m`, bx + barLen / 2, by - 9);
+  ctx.restore();
+}
+
 let nodes = [];     // {x, y, sx, sy}  (sx/sy = fixed in that direction, metres)
 let elements = [];  // [i, j]
 let forces = {};    // nodeIndex -> {fx, fy} in Newtons
@@ -402,8 +426,7 @@ let editingForceIdx = null;
 let result = null;  // {d, T, R}
 
 function preload() {
-  // Original 8-node / 12-bar project truss (N1..N8), spacing scaled ×5 from the
-  // 200mm reference geometry for a clearer default canvas view.
+  // Original 8-node / 12-bar project truss, spacing scaled ×5 from the 200mm reference geometry
   nodes = [
     { x: 0.0, y: 1.0, sx: true,  sy: true },  // N1
     { x: 0.0, y: 0.0, sx: true,  sy: true },  // N2
@@ -439,7 +462,6 @@ function invalidate() {
   render();
 }
 
-// ── Force editor (exact magnitude/angle entry) ─────────────
 function openForceEditor(idx) {
   editingForceIdx = idx;
   const f = forces[idx] || { fx: 0, fy: 0 };
@@ -473,7 +495,6 @@ function applyForceEditor() {
   invalidate();
 }
 
-// ── Solver ─────────────────────────────────────────────────
 function gaussSolve(Kin, bin) {
   const n = bin.length;
   const M = Kin.map((row, i) => { const r = [...row]; r.push(bin[i]); return r; });
@@ -499,6 +520,39 @@ function gaussSolve(Kin, bin) {
   return { x, unstable: false };
 }
 
+// Tangent stiffness + internal force at displacement d, evaluated at the current (deformed)
+// bar orientation. At d=0 this is exactly the linear truss stiffness; away from it, the added
+// geometric ("stress-stiffening") term is what lets a bar resist load once rotated even
+// slightly off its original line — the mechanism a linear analysis alone can't see.
+function assembleTangent(nodes, elements, d, L0, E_MOD, A_SEC, ndof) {
+  const K = Array.from({ length: ndof }, () => new Float64Array(ndof));
+  const Fint = new Array(ndof).fill(0);
+  const T = new Array(elements.length).fill(0);
+  elements.forEach(([i, j], idx) => {
+    const xi = nodes[i].x + d[i*2], yi = nodes[i].y + d[i*2+1];
+    const xj = nodes[j].x + d[j*2], yj = nodes[j].y + d[j*2+1];
+    const dx = xj - xi, dy = yj - yi;
+    const L = Math.hypot(dx, dy) || 1e-9;
+    const c = dx / L, s = dy / L;
+    const l0 = L0[idx];
+    const t = E_MOD * A_SEC * (L - l0) / l0; // tension (+) / compression (-)
+    T[idx] = t;
+    const kMat = E_MOD * A_SEC / l0;
+    const kGeo = t / L;
+    const Kxx = kMat*c*c + kGeo*(1-c*c);
+    const Kxy = kMat*c*s - kGeo*c*s;
+    const Kyy = kMat*s*s + kGeo*(1-s*s);
+    const [d0, d1, d2, d3] = [i*2, i*2+1, j*2, j*2+1];
+    K[d0][d0]+=Kxx; K[d0][d1]+=Kxy; K[d0][d2]-=Kxx; K[d0][d3]-=Kxy;
+    K[d1][d0]+=Kxy; K[d1][d1]+=Kyy; K[d1][d2]-=Kxy; K[d1][d3]-=Kyy;
+    K[d2][d0]-=Kxx; K[d2][d1]-=Kxy; K[d2][d2]+=Kxx; K[d2][d3]+=Kxy;
+    K[d3][d0]-=Kxy; K[d3][d1]-=Kyy; K[d3][d2]+=Kxy; K[d3][d3]+=Kyy;
+    Fint[d0] -= t*c; Fint[d1] -= t*s;
+    Fint[d2] += t*c; Fint[d3] += t*s;
+  });
+  return { K, Fint, T };
+}
+
 function compute() {
   const n = nodes.length;
   if (n < 2 || elements.length < 1) {
@@ -510,23 +564,7 @@ function compute() {
   const D_M = parseFloat(document.getElementById('dInput').value) / 1000;  // mm -> m
   const A_SEC = Math.PI * D_M * D_M / 4;
   const ndof = n * 2;
-  const K = Array.from({ length: ndof }, () => new Float64Array(ndof));
-  const L0 = [];
-  for (const [i, j] of elements) {
-    const dx = nodes[j].x - nodes[i].x, dy = nodes[j].y - nodes[i].y;
-    const L = Math.hypot(dx, dy) || 1e-6;
-    L0.push(L);
-    const k = E_MOD * A_SEC / L;
-    const c = dx / L, s = dy / L;
-    const ke = [
-      [ c*c,  c*s, -c*c, -c*s],
-      [ c*s,  s*s, -c*s, -s*s],
-      [-c*c, -c*s,  c*c,  c*s],
-      [-c*s, -s*s,  c*s,  s*s],
-    ];
-    const d = [i*2, i*2+1, j*2, j*2+1];
-    for (let a = 0; a < 4; a++) for (let b = 0; b < 4; b++) K[d[a]][d[b]] += k * ke[a][b];
-  }
+  const L0 = elements.map(([i, j]) => Math.hypot(nodes[j].x-nodes[i].x, nodes[j].y-nodes[i].y) || 1e-6);
 
   const free = [];
   nodes.forEach((nd, idx) => { if (!nd.sx) free.push(idx*2); if (!nd.sy) free.push(idx*2+1); });
@@ -539,34 +577,60 @@ function compute() {
   const F = new Array(ndof).fill(0);
   for (const idx in forces) { F[idx*2] = forces[idx].fx; F[idx*2+1] = forces[idx].fy; }
 
-  const Kred = free.map(r => free.map(c => K[r][c]));
-  const Fred = free.map(r => F[r]);
-  const sol = gaussSolve(Kred, Fred);
+  let d = new Array(ndof).fill(0);
+  let stable = false;
 
-  if (sol.unstable) {
-    document.getElementById('sv-status').textContent = 'Unstable — add supports';
+  // First try the plain linear solve (fast path — works for any properly triangulated truss).
+  {
+    const { K } = assembleTangent(nodes, elements, d, L0, E_MOD, A_SEC, ndof);
+    const Kred = free.map(r => free.map(c => K[r][c]));
+    const Fred = free.map(r => F[r]);
+    const sol = gaussSolve(Kred, Fred);
+    if (!sol.unstable) {
+      free.forEach((dof, i) => { d[dof] = sol.x[i]; });
+      stable = true;
+    }
+  }
+
+  // Singular tangent = a mechanism (e.g. collinear bars, no transverse stiffness at zero
+  // deflection). Nudge off the degenerate geometry and let Newton-Raphson find the large-
+  // displacement equilibrium, if one exists — a genuinely unsupported structure still won't converge.
+  if (!stable) {
+    const NUDGE = 0.001; // metres
+    free.forEach(dof => { d[dof] += (F[dof] !== 0 ? Math.sign(F[dof]) : 1) * NUDGE; });
+
+    // Right after the nudge the tangent is barely non-singular, so an uncapped step would
+    // way overshoot. Capping it keeps things stable — just takes more, smaller steps.
+    const MAX_ITERS = 300, TOL = 1e-9, MAX_STEP = 0.01; // metres
+    for (let iter = 0; iter < MAX_ITERS; iter++) {
+      const { K, Fint } = assembleTangent(nodes, elements, d, L0, E_MOD, A_SEC, ndof);
+      const Rfree = free.map(dof => F[dof] - Fint[dof]);
+      const Kred = free.map(r => free.map(c => K[r][c]));
+      const sol = gaussSolve(Kred, Rfree);
+      if (sol.unstable) { stable = false; break; }
+      const stepMax = Math.max(...sol.x.map(Math.abs), 1e-12);
+      const scale = stepMax > MAX_STEP ? MAX_STEP / stepMax : 1;
+      let maxDelta = 0;
+      free.forEach((dof, i) => { const inc = sol.x[i] * scale; d[dof] += inc; maxDelta = Math.max(maxDelta, Math.abs(inc)); });
+      if (maxDelta < TOL) { stable = true; break; }
+    }
+  }
+
+  if (!stable) {
+    const hasAnySupport = nodes.some(nd => nd.sx || nd.sy);
+    document.getElementById('sv-status').textContent = hasAnySupport
+      ? 'Under-constrained — add a bracing bar'
+      : 'Unstable — add supports';
     document.getElementById('sv-status').style.color = '#dc2626';
     result = null;
     render();
     return;
   }
 
-  const d = new Array(ndof).fill(0);
-  free.forEach((dof, i) => { d[dof] = sol.x[i]; });
-
-  const T = elements.map(([i, j], idx) => {
-    const k = E_MOD * A_SEC / L0[idx];
-    const Xi = nodes[i].x + d[i*2], Yi = nodes[i].y + d[i*2+1];
-    const Xj = nodes[j].x + d[j*2], Yj = nodes[j].y + d[j*2+1];
-    return (Math.hypot(Xj-Xi, Yj-Yi) - L0[idx]) * k;
-  });
-
+  const final = assembleTangent(nodes, elements, d, L0, E_MOD, A_SEC, ndof);
+  const T = final.T;
   const R = new Array(ndof).fill(0);
-  for (let r = 0; r < ndof; r++) {
-    let s = 0;
-    for (let c = 0; c < ndof; c++) s += K[r][c] * d[c];
-    R[r] = s - F[r];
-  }
+  for (let r = 0; r < ndof; r++) R[r] = final.Fint[r] - F[r];
 
   result = { d, T, R, E_MOD, A_SEC };
 
@@ -577,26 +641,27 @@ function compute() {
   document.getElementById('dispList').innerHTML = nodes.map((nd, i) => {
     const ux = d[i*2] * 1000, uy = d[i*2+1] * 1000;
     const mag = Math.hypot(ux, uy);
-    return `<div class="result-row"><span class="name">N${i+1}</span><span class="val">${mag.toFixed(3)} mm</span></div>`;
+    return `<div class="result-row"><span class="name">${subHtml('N'+(i+1))}</span><span class="val">${mag.toFixed(3)} mm</span></div>`;
   }).join('');
 
   document.getElementById('stressEmpty').style.display = 'none';
   document.getElementById('stressList').innerHTML = elements.map((el, idx) => {
     const stressMPa = (T[idx] / A_SEC) / 1e6;
-    return `<div class="result-row"><span class="name">E${idx+1}</span><span class="val">${signed(stressMPa,4)} MPa</span></div>`;
+    return `<div class="result-row"><span class="name">${subHtml('E'+(idx+1))}</span><span class="val">${signed(stressMPa,4)} MPa</span></div>`;
   }).join('');
 
   const ampWrap = document.getElementById('ampWrap');
   ampWrap.style.display = 'flex';
   const maxDispM = Math.max(...d.map(Math.abs));
-  const autoAmp = maxDispM > 1e-9 ? Math.min(100, Math.max(1, Math.round(40 / (maxDispM * SC)))) : 30;
-  document.getElementById('ampSlider').value = autoAmp;
-  document.getElementById('ampReadout').textContent = '×' + autoAmp;
+  let autoAmp = maxDispM > 1e-9 ? 40 / (maxDispM * SC) : 1;
+  autoAmp = Math.min(100, Math.max(0.01, autoAmp));
+  autoAmp = autoAmp >= 1 ? Math.round(autoAmp) : Math.round(autoAmp * 100) / 100;
+  document.getElementById('ampSlider').value = ampToSlider(autoAmp);
+  document.getElementById('ampReadout').textContent = '×' + formatAmp(autoAmp);
 
   render();
 }
 
-// ── Rendering ──────────────────────────────────────────────
 function stressColor(t, maxT) {
   if (maxT < 1e-10) return '#969696';
   const v = Math.max(-1, Math.min(1, t / maxT));
@@ -607,11 +672,12 @@ function stressColor(t, maxT) {
 
 function drawSupport(cx, cy, type) {
   const s = 13;
+  const hw = s * 0.8; // triangle base half-width — nothing below is drawn wider than this
   ctx.save();
   ctx.beginPath();
   ctx.moveTo(cx, cy);
-  ctx.lineTo(cx - s*0.8, cy + s*1.3);
-  ctx.lineTo(cx + s*0.8, cy + s*1.3);
+  ctx.lineTo(cx - hw, cy + s*1.3);
+  ctx.lineTo(cx + hw, cy + s*1.3);
   ctx.closePath();
   ctx.fillStyle = '#dbeafe';
   ctx.strokeStyle = '#2563eb';
@@ -627,17 +693,17 @@ function drawSupport(cx, cy, type) {
   }
   ctx.lineWidth = 2.5;
   ctx.strokeStyle = '#2563eb';
-  ctx.beginPath(); ctx.moveTo(cx-s-4, groundY); ctx.lineTo(cx+s+4, groundY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-hw, groundY); ctx.lineTo(cx+hw, groundY); ctx.stroke();
 
   ctx.lineWidth = 1;
   ctx.strokeStyle = '#93c5fd';
-  for (let h = -s-2; h <= s+2; h += 6) {
+  for (let h = -hw + 5; h <= hw; h += 6) {
     ctx.beginPath(); ctx.moveTo(cx+h, groundY); ctx.lineTo(cx+h-5, groundY+6); ctx.stroke();
   }
   ctx.restore();
 }
 
-function drawForceArrow(cx, cy, fx, fy) {
+function drawForceArrow(cx, cy, fx, fy, label) {
   const mag = Math.hypot(fx, fy);
   if (mag < 0.05) return;
   const realLen = mag * FORCE_PX_PER_N;
@@ -655,10 +721,52 @@ function drawForceArrow(cx, cy, fx, fy) {
   ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-11,-6); ctx.lineTo(-11,6); ctx.closePath(); ctx.fill();
   ctx.restore();
 
-  ctx.fillStyle = '#991b1b';
-  ctx.font = 'bold 11px -apple-system, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(`${mag.toFixed(1)} N`, cx + Math.cos(ang)*(len+22), cy + Math.sin(ang)*(len+22));
+  ctx.restore();
+
+  const tx = cx + Math.cos(ang)*(len+22), ty = cy + Math.sin(ang)*(len+22);
+  if (label) {
+    drawForceLabel(label, `${mag.toFixed(1)}N`, tx, ty, '#991b1b');
+  } else {
+    ctx.save();
+    ctx.fillStyle = '#991b1b';
+    ctx.font = 'bold 11px -apple-system, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${mag.toFixed(1)} N`, tx, ty);
+    ctx.restore();
+  }
+}
+
+// Draws "F1 = 10.0N"-style labels centered at (x,y): letter + subscript digits + " = " + value
+function drawForceLabel(label, valueStr, x, y, color) {
+  const m = label.match(/^([A-Za-z]+)(\d+)$/);
+  const letter = m ? m[1] : label;
+  const num = m ? m[2] : '';
+  const suffix = ` = ${valueStr}`;
+  const fontMain = 'bold 11px -apple-system, sans-serif';
+  const fontSub = 'bold 8px -apple-system, sans-serif';
+
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.textAlign = 'left';
+
+  ctx.font = fontMain;
+  const letterW = ctx.measureText(letter).width;
+  ctx.font = fontSub;
+  const numW = num ? ctx.measureText(num).width : 0;
+  ctx.font = fontMain;
+  const suffixW = ctx.measureText(suffix).width;
+
+  let px = x - (letterW + numW + suffixW) / 2;
+  ctx.font = fontMain;
+  ctx.fillText(letter, px, y);
+  px += letterW;
+  if (num) {
+    ctx.font = fontSub;
+    ctx.fillText(num, px + 1, y + 3);
+    px += numW + 1;
+  }
+  ctx.font = fontMain;
+  ctx.fillText(suffix, px, y);
   ctx.restore();
 }
 
@@ -671,14 +779,7 @@ function render() {
   for (let x = OX % gridPx; x < W; x += gridPx) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
   for (let y = OY % gridPx; y < H; y += gridPx) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
 
-  const d = result ? result.d : null;
-  const amp = result ? parseFloat(document.getElementById('ampSlider').value) : 0;
   const maxT = result ? Math.max(...result.T.map(Math.abs), 1e-10) : 0;
-
-  function dPos(idx) {
-    if (!d) return toPx(nodes[idx].x, nodes[idx].y);
-    return toPx(nodes[idx].x + d[idx*2]*amp, nodes[idx].y + d[idx*2+1]*amp);
-  }
 
   // ghost original (only meaningful once deformed)
   if (result) {
@@ -689,10 +790,15 @@ function render() {
       const [x2,y2] = toPx(nodes[j].x, nodes[j].y);
       ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
     }
-    ctx.setLineDash([]); ctx.restore();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#cbd5e1';
+    nodes.forEach((nd, idx) => {
+      const [x,y] = toPx(nodes[idx].x, nodes[idx].y);
+      ctx.beginPath(); ctx.arc(x,y,3,0,Math.PI*2); ctx.fill();
+    });
+    ctx.restore();
   }
 
-  // bars
   ctx.lineCap = 'round';
   elements.forEach(([i,j], idx) => {
     const [x1,y1] = dPos(i), [x2,y2] = dPos(j);
@@ -704,24 +810,19 @@ function render() {
     ctx.lineWidth = 5;
     ctx.strokeStyle = result ? stressColor(result.T[idx], maxT) : '#475569';
     ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-    ctx.save(); ctx.font = '9px -apple-system, sans-serif'; ctx.fillStyle = '#94a3b8';
-    ctx.fillText(`E${idx+1}`, (x1+x2)/2+3, (y1+y2)/2-3);
-    ctx.restore();
+    drawSubLabel(`E${idx+1}`, (x1+x2)/2+3, (y1+y2)/2-3, '#94a3b8', 9);
   });
 
-  // supports
   nodes.forEach((nd, idx) => {
     if (nd.sx && nd.sy) drawSupport(...dPos(idx), 'pin');
     else if (nd.sy) drawSupport(...dPos(idx), 'roller');
   });
 
-  // forces
-  Object.keys(forces).forEach(k => {
+  Object.keys(forces).forEach((k, i) => {
     const [x,y] = dPos(+k);
-    drawForceArrow(x, y, forces[k].fx, forces[k].fy);
+    drawForceArrow(x, y, forces[k].fx, forces[k].fy, `F${i+1}`);
   });
 
-  // nodes
   nodes.forEach((nd, idx) => {
     const [x,y] = dPos(idx);
     ctx.fillStyle = (mode === 'bar' && barFirst === idx) ? '#3b82f6' : '#16a34a';
@@ -730,22 +831,20 @@ function render() {
       ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(x,y,9,0,Math.PI*2); ctx.stroke();
     }
-    ctx.font = '11px -apple-system, sans-serif';
-    ctx.fillStyle = '#16a34a';
-    ctx.fillText(`N${idx+1}`, x+8, y-6);
+    drawSubLabel(`N${idx+1}`, x+8, y-6, '#16a34a', 11);
   });
 
-  // live force drag preview
   if (dragForce !== null) {
     const [x,y] = toPx(nodes[dragForce.idx].x, nodes[dragForce.idx].y);
     drawForceArrow(x, y, dragForce.fx, dragForce.fy);
   }
+
+  drawScaleBar();
 }
 
-// ── Hit testing ────────────────────────────────────────────
 function nodeAt(px, py) {
   for (let i = 0; i < nodes.length; i++) {
-    const [x,y] = toPx(nodes[i].x, nodes[i].y);
+    const [x,y] = dPos(i);
     if (Math.hypot(px-x, py-y) < HIT_R) return i;
   }
   return null;
@@ -762,14 +861,13 @@ function distToSeg(px,py,x1,y1,x2,y2) {
 function elementAt(px, py) {
   for (let i = 0; i < elements.length; i++) {
     const [a,b] = elements[i];
-    const [x1,y1] = toPx(nodes[a].x, nodes[a].y);
-    const [x2,y2] = toPx(nodes[b].x, nodes[b].y);
+    const [x1,y1] = dPos(a);
+    const [x2,y2] = dPos(b);
     if (distToSeg(px,py,x1,y1,x2,y2) < 7) return i;
   }
   return null;
 }
 
-// ── Node/element deletion with index remap ────────────────
 function deleteNode(idx) {
   elements = elements.filter(([a,b]) => a !== idx && b !== idx)
                      .map(([a,b]) => [a > idx ? a-1 : a, b > idx ? b-1 : b]);
@@ -785,7 +883,6 @@ function deleteNode(idx) {
   else if (barFirst !== null && barFirst > idx) barFirst--;
 }
 
-// ── Mode / UI wiring ───────────────────────────────────────
 document.querySelectorAll('.mode-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -799,7 +896,8 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
 
 document.getElementById('computeBtn').addEventListener('click', compute);
 document.getElementById('ampSlider').addEventListener('input', () => {
-  document.getElementById('ampReadout').textContent = '×' + document.getElementById('ampSlider').value;
+  const amp = sliderToAmp(parseFloat(document.getElementById('ampSlider').value));
+  document.getElementById('ampReadout').textContent = '×' + formatAmp(amp);
   render();
 });
 document.getElementById('feMag').addEventListener('input', applyForceEditor);
@@ -892,7 +990,7 @@ canvas.addEventListener('mousemove', (e) => {
   const hit = nodeAt(px, py);
   if (hit !== null) {
     const nd = nodes[hit];
-    let text = `N${hit+1}`;
+    let text = subHtml(`N${hit+1}`);
     if (result) {
       const ux = result.d[hit*2]*1000, uy = result.d[hit*2+1]*1000;
       text += ` · Ux ${ux.toFixed(2)} mm · Uy ${uy.toFixed(2)} mm`;
@@ -902,7 +1000,7 @@ canvas.addEventListener('mousemove', (e) => {
     } else if (nd.sx || nd.sy) {
       text += nd.sx ? ' · pinned' : ' · roller';
     }
-    tooltip.textContent = text;
+    tooltip.innerHTML = text;
     tooltip.style.left = px + 'px'; tooltip.style.top = py + 'px';
     tooltip.style.display = 'block';
     canvas.style.cursor = mode === 'delete' ? 'not-allowed' : 'pointer';
@@ -913,7 +1011,7 @@ canvas.addEventListener('mousemove', (e) => {
     const t = result.T[eh];
     const stressMPa = (t / result.A_SEC) / 1e6;
     const strainUE  = (stressMPa * 1e6 / result.E_MOD) * 1e6; // microstrain
-    tooltip.textContent = `E${eh+1}, σ=${signed(stressMPa,3)} MPa ε=${signed(strainUE,0)}e-6`;
+    tooltip.innerHTML = `${subHtml('E'+(eh+1))}, σ=${signed(stressMPa,3)} MPa ε=${signed(strainUE,0)}e-6`;
     tooltip.style.left = px + 'px'; tooltip.style.top = py + 'px';
     tooltip.style.display = 'block';
     canvas.style.cursor = mode === 'delete' ? 'not-allowed' : 'default';
